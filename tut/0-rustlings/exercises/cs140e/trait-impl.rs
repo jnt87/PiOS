@@ -1,12 +1,32 @@
 // FIXME: Make me pass! Diff budget: 25 lines.
 
-// I AM NOT DONE
-
 #[derive(Debug)]
 enum Duration {
     MilliSeconds(u64),
-    Seconds(u32),
-    Minutes(u16),
+    Seconds(u64),
+    Minutes(u64),
+}
+
+impl PartialEq for Duration {
+    fn eq(&self, other: &Duration) -> bool {
+        let mut y = 0;
+        let mut z = 0;
+        match &self {
+            Duration::MilliSeconds(r) => y = *r,
+            Duration::Seconds(r) => y = *r * 1000,
+            Duration::Minutes(r) => y = *r * 1000 * 60,
+        }
+        match other {
+            Duration::MilliSeconds(r) => z = *r,
+            Duration::Seconds(r) => z = *r * 1000,
+            Duration::Minutes(r) => z = *r * 1000 * 60,
+        }
+        if y == z {
+            true
+        } else {
+            false
+        }
+    }
 }
 
 // What traits does `Duration` need to implement?

@@ -1,7 +1,5 @@
 // FIXME: Make me pass! Diff budget: 30 lines.
 
-// I AM NOT DONE
-
 #[derive(Default)]
 struct Builder {
     string: Option<String>,
@@ -9,13 +7,35 @@ struct Builder {
 }
 
 impl Builder {
-    // fn string(...
-
-    // fn number(...
+    //my code
+    fn string<S>(&mut self, a: S) -> &mut Self where S: Into<String> {
+        self.string = Some(a.into());
+        self
+    } 
+    //my code
+    fn number(&mut self, b: usize) -> &mut Self {
+        self.number = Some(b);
+        self
+    }
 }
 
 impl ToString for Builder {
     // Implement the trait
+    fn to_string(&self) -> String {
+        let mut new_str = String::from("");
+        let y = self.string.as_ref();
+        if y != None {
+            new_str.push_str(self.string.as_ref().unwrap());
+        }
+        let x = self.number.as_ref();
+        if x != None && y != None {
+            new_str.push_str(" ");
+        }
+        if x != None {
+            new_str.push_str(&self.number.as_ref().unwrap().to_string());
+        }
+        new_str as String
+    }
 }
 
 // Do not modify this function.
@@ -23,7 +43,8 @@ impl ToString for Builder {
 fn builder() {
     let empty = Builder::default().to_string();
     assert_eq!(empty, "");
-
+    
+    let just_str = Builder::default().string("hi");
     let just_str = Builder::default().string("hi").to_string();
     assert_eq!(just_str, "hi");
 
