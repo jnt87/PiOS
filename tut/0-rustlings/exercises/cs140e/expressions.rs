@@ -12,8 +12,8 @@ impl Into<usize> for IntWrapper {
 // Implement a generic function here
 // fn max...
 // my code
-fn max<N>(arg1: N, arg2: N) -> usize where N: Into<usize> + Copy {
-    if arg1.into() < arg2.into() { arg2.into() } else { arg1.into() }
+fn max<N>(arg1: N, arg2: N) -> N where N: Into<usize> + Copy {
+    if arg1.into() < arg2.into() { arg2 } else { arg1 }
 }
 
 #[test]
@@ -21,5 +21,5 @@ fn expressions() {
     assert_eq!(max(1usize, 3), 3);
     assert_eq!(max(1u8, 3), 3);
     assert_eq!(max(1u8, 3), 3);
-    assert_eq!(max(IntWrapper(120), IntWrapper(248)), IntWrapper(248).into());
+    assert_eq!(max(IntWrapper(120), IntWrapper(248)), IntWrapper(248));
 }
