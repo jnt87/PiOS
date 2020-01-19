@@ -5,7 +5,8 @@ export PATH := /usr/lib/llvm-8/bin:$(PATH)
 CC := clang
 AS := clang
 
-TARGET := aarch64-unknown-none
+#TARGET := aarch64-unknown-none
+TARGET := aarch64-none-elf
 CFLAGS := --target=$(TARGET) -Wall -O2 -mcpu=cortex-a53
 ASFLAGS := $(CFLAGS)
 
