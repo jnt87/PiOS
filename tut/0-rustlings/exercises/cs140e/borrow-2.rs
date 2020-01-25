@@ -1,5 +1,6 @@
 // FIXME: Make me pass! Diff budget: 2 lines.
 
+<<<<<<< HEAD
 // What traits does this struct need to derive?
 #[derive(PartialEq, Debug)]
 struct MyType(usize);
