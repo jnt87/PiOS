@@ -88,7 +88,6 @@ fn test_expect_byte_or_cancel() {
     let b = Xmodem::new(Cursor::new(buffer.as_mut_slice()))
         .expect_byte_or_cancel(2, "it's a 2")
         .expect("got a 2");
-
     assert_eq!(b, 2);
 }
 

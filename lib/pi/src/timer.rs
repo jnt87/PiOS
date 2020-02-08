@@ -32,17 +32,25 @@ impl Timer {
     /// Reads the system timer's counter and returns Duration.
     /// `CLO` and `CHI` together can represent the number of elapsed microseconds.
     pub fn read(&self) -> Duration {
-        unimplemented!()
+        let LO = self.registers.CLO.read() as u64;
+        let mut HI = self.registers.CHI.read() as u64;
+        HI = HI << 32;
+        let time = LO | HI;
+        Duration::from_nanos(time)
     }
 }
 
 /// Returns current time.
 pub fn current_time() -> Duration {
-    unimplemented!()
+    Timer::new().read()
 }
 
-/// Spins until `t` duration have passed.
+/// Spins until `t` duration have passed. Prevent inlining for consistency
+#[inline(never)]
 pub fn spin_sleep(t: Duration) {
-    unimplemented!()
+    let _start = current_time() + t;
+    while current_time() < _start {
+        unsafe { asm!("nop" :::: "volatile"); }
+    }
 }
 

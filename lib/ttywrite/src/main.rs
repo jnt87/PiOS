@@ -3,7 +3,7 @@ mod parsers;
 use serial;
 use structopt;
 use structopt_derive::StructOpt;
-use xmodem::Xmodem;
+use xmodem::{Xmodem, Progress};
 
 use std::path::PathBuf;
 use std::time::Duration;
@@ -52,6 +52,33 @@ fn main() {
 
     let opt = Opt::from_args();
     let mut port = serial::open(&opt.tty_path).expect("path points to invalid TTY");
+    let mut x = port.read_settings().unwrap();
+    x.set_baud_rate(opt.baud_rate);
+    x.set_char_size(opt.char_width);
+    x.set_stop_bits(opt.stop_bits);
+    x.set_flow_control(opt.flow_control);
+    port.write_settings(&x);
+    port.set_timeout(Duration::from_secs(opt.timeout));
+    match opt.input {
+        Some(ref path_to_file) => {
+            let mut input = BufReader::new(File::open(path_to_file).expect("failed to open"));
+                if opt.raw {
+                    io::copy(&mut input, &mut port);
+                } else {
+                    Xmodem::transmit_with_progress(&mut input, &mut port, progress_fn);
+                }
+        }
+        None => {
+            let mut input = io::stdin();
+            if opt.raw {
+                io::copy(&mut input, &mut port);
+            } else {
+                Xmodem::transmit_with_progress(&mut input, &mut port, progress_fn);
+            }
+        }
+    }
+}
 
-    // FIXME: Implement the `ttywrite` utility.
+fn progress_fn(progress: Progress) {
+    println!("Progress: {:?}", progress);
 }
