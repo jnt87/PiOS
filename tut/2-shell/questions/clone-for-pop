@@ -1,0 +1,1 @@
+We implement clone so we can copy the data out because when we pop we are not taking the data out, we are just decrementing the length.

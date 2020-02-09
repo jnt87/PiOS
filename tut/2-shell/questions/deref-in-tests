@@ -1,0 +1,6 @@
+The tests that fail without deref:
+assignment_test_example, index_oob, indexing, interator
+The tests that fail without deref mut:
+mut indexing
+
+The reason is because iterators are used and it needs to deref them and pull the slice out, this includes the use of the brackets to index. deref mut modifies after indexing. 

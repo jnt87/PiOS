@@ -1,0 +1,1 @@
+It won't compile, the lifetime will expire before it reaches the intended scope.

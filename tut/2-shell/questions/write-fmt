@@ -1,0 +1,1 @@
+Consoles method will be called, which uses the miniuart.write_str().

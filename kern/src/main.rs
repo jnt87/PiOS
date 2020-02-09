@@ -36,22 +36,29 @@ use core::fmt::Write;
 
 
 
+
 unsafe fn kmain() -> ! {
-    let mut x = Gpio::new(16).into_output();
-    let timer1 = Duration::from_nanos(1000000);
-    let timer2 = Duration::from_nanos(1000000);
-    let mut rxtx = MiniUart::new();
-    shell("->");
-    loop {
-        /*
-        x.set();
-        timer::spin_sleep(timer1);
-        x.clear();
-        timer::spin_sleep(timer2);
-        */
-        /*kprintln!("infinite");
-        rxtx.write_str("loop");
-        let x = rxtx.read_byte();
-        rxtx.write_byte(x);*/
+    /*
+    let timer = Duration::from_nanos(1000000);
+    let mut a = Gpio::new(5).into_output(); 
+    let mut b = Gpio::new(6).into_output();
+    let mut c = Gpio::new(13).into_output();
+    let mut d = Gpio::new(19).into_output();
+    let mut e = Gpio::new(26).into_output();
+    loop {  
+        a.set();
+        c.set();
+        e.set();
+        b.clear();
+        d.clear();
+        timer::spin_sleep(timer);
+        a.clear();
+        c.clear();
+        e.clear();
+        b.set();
+        d.set();
+        timer::spin_sleep(timer);
     }
+    */
+    shell("->");
 }

@@ -82,3 +82,4 @@ fn main() {
 fn progress_fn(progress: Progress) {
     println!("Progress: {:?}", progress);
 }
+

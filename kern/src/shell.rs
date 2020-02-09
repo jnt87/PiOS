@@ -46,12 +46,14 @@ impl<'a> Command<'a> {
 /// returns if the `exit` command is called.
 pub fn shell(prefix: &str) -> ! {
     loop {
-        kprint!("{}", prefix);
         let mut buf_mem = [0u8; 512];
         let mut buffer = StackVec::new(&mut buf_mem);
-
         loop {
-
+            let mut x = CONSOLE.lock();
+            kprint!("\r{}", prefix);
+            if x.inner().has_byte() { break; }
+        }
+        loop {
             let mut x = CONSOLE.lock();
             let byte = x.read_byte();
 
@@ -64,7 +66,7 @@ pub fn shell(prefix: &str) -> ! {
 
                 match command_in {
                     Err(Error::TooManyArgs)=> {
-                        kprintln!("needs less than 64 args");
+                        kprintln!("error: too many arguments");
                     },
                     Err(Error::Empty) => {
                     },
@@ -72,9 +74,9 @@ pub fn shell(prefix: &str) -> ! {
                         if command.path() == "echo" {
                             let num_args = command.args.len();
 
-                            if num_args > 0 {
-                                for string in command.args[..num_args-1].iter() {
-                                    kprintln!("{} ", string);
+                            if num_args > 1 {
+                                for string in command.args[1..num_args-1].iter() {
+                                    kprint!("{} ", string);
                                 }
                                 kprintln!("{}", command.args[num_args-1]);
                             }
@@ -89,15 +91,14 @@ pub fn shell(prefix: &str) -> ! {
                 
                 if byte == 8 || byte == 127 {
                     if buffer.pop() == None {
-                        //do nothing
+                        x.write_byte(7);
                     } else {
-                        x.read_byte();
                         x.write_byte(8);//(&[8, b' ', 8]); //not found
                         x.write_byte(b' ');
                         x.write_byte(8);
                     }
-                } else if byte < 32 || byte == 255 {
-                    //do nothing
+                } else if byte < b'\x20' || byte > 0x7E {
+                    x.write_byte(7);
                 } else {
                     if buffer.push(byte).is_err() {
                         //do nothing

@@ -1,0 +1,1 @@
+These registers are defined as ReadVolatile, which does not allow us to write to them. It is essentially a constant pointer, so you cannot write to it.

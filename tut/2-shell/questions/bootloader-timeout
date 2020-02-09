@@ -1,0 +1,1 @@
+You will need to resend the NAK byte constantly from the pi, otherwise by the time you call ttywrite the NAK byte will have already passed and it will hang.

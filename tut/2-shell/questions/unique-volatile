@@ -1,0 +1,1 @@
+Unique implements a wrapper that gives use Sync around a value. This will allow us to have a unique value to be shared across instances later.

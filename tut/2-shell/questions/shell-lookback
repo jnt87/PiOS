@@ -1,0 +1,1 @@
+It uses the stackvec to support the input in memory so that it can be edited and used. It uses console to make sure nothing else is using it and the write bytes and read bytes from console. Console uses uart which uses GPIO and timer. GPIO uses volatile. 

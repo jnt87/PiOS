@@ -1,0 +1,1 @@
+readable returns a constant pointer, writeable returns a mutable pointer, and read_writeable returns a T with the traits BitAnd and BitOr.

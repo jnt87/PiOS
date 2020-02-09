@@ -1,0 +1,1 @@
+ReadVolatile and WriteVolatile uses the macros provided to return pointers of specific types, const and mut respectively.

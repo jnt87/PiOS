@@ -261,7 +261,6 @@ impl<T: io::Read + io::Write> Xmodem<T> {
                 self.write_byte(NAK)?;
                 return ioerr!(Interrupted, "Check sum failed");
             }
-            //self.packet = (self.packet + 1) % 256;
             self.packet = self.packet.wrapping_add(1);
             self.write_byte(ACK)?; //GOT IT
             (self.progress)(Progress::Packet(pkt_num));
@@ -273,6 +272,7 @@ impl<T: io::Read + io::Write> Xmodem<T> {
             self.write_byte(ACK)?;
             Ok(0)
         } else {
+            self.write_byte(CAN)?;
             return ioerr!(InvalidData, "First byte not EOT or SOH")
         }
     }
@@ -323,27 +323,22 @@ impl<T: io::Read + io::Write> Xmodem<T> {
             self.write_byte(SOH)?;
             self.write_byte(pkt_num)?;
             self.write_byte(255-pkt_num)?;
-            while !done && i < 10 {
-                let mut bytes_tx = 0;
-                i = 0;
-                while bytes_tx < 128 {
-                    self.write_byte(buf[bytes_tx])?;
-                    bytes_tx = bytes_tx + 1;
-                }
-                self.write_byte(get_checksum(buf))?;
-                let packet_tx_success = self.read_byte(false)?;
-                if packet_tx_success == NAK {
-                    return ioerr!(Interrupted, "transmit failed")
-                } else if packet_tx_success == ACK {
-                    done = true;
-                    i = i + 1;
-                } else {
-                    return ioerr!(InvalidData, "expected ACK or NAK")
-                }
+            let mut bytes_tx = 0;
+            while bytes_tx < 128 {
+                self.write_byte(buf[bytes_tx])?;
+                bytes_tx = bytes_tx + 1;
             }
-            (self.progress)(Progress::Packet(pkt_num));
-            self.packet = self.packet.wrapping_add(1);
-            Ok(i)
+            self.write_byte(get_checksum(buf))?;
+            let packet_tx_success = self.read_byte(false)?;
+            if packet_tx_success == NAK {
+                return ioerr!(Interrupted, "transmit failed")
+            } else if packet_tx_success == ACK {
+                (self.progress)(Progress::Packet(pkt_num));
+                self.packet = self.packet.wrapping_add(1);
+                Ok(128)
+            } else {
+                return ioerr!(InvalidData, "expected ACK or NAK")
+            }
         }
         else {
             self.write_byte(EOT)?;

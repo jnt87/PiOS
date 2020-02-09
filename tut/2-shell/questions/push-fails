@@ -1,0 +1,2 @@
+Our StackVec is going to be on the stack and it will be on a set amount of space. We will not be able to reallocate them otherwise.
+

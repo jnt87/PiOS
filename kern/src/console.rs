@@ -25,7 +25,7 @@ impl Console {
 
     /// Returns a mutable borrow to the inner `MiniUart`, initializing it as
     /// needed.
-    fn inner(&mut self) -> &mut MiniUart {
+    pub fn inner(&mut self) -> &mut MiniUart {
         self.initialize();
         self.inner.as_mut().unwrap()
     }

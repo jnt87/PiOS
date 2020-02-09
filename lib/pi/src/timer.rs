@@ -36,7 +36,7 @@ impl Timer {
         let mut HI = self.registers.CHI.read() as u64;
         HI = HI << 32;
         let time = LO | HI;
-        Duration::from_nanos(time)
+        Duration::from_micros(time)
     }
 }
 
