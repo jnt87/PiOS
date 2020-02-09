@@ -4,6 +4,7 @@
 #![feature(asm)]
 #![feature(global_asm)]
 #![feature(optin_builtin_traits)]
+#![feature(raw_vec_internals)]
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(not(test), no_main)]
 
@@ -18,7 +19,11 @@ const GPIO_CLR0: *mut u32 = (GPIO_BASE + 0x28) as *mut u32;
 #[cfg(not(test))]
 mod init;
 
+extern crate alloc;
+
+pub mod allocator;
 pub mod console;
+pub mod fs;
 pub mod mutex;
 pub mod shell;
 
@@ -33,32 +38,21 @@ use core::time::Duration;
 use pi::gpio::Gpio;
 use pi::uart::MiniUart;
 use core::fmt::Write;
+use allocator::Allocator;
+use fs::FileSystem;
 
 
 
+#[cfg_attr(not(test), global_allocator)]
+pub static ALLOCATOR: Allocator = Allocator::uninitialized();
+pub static FILESYSTEM: FileSystem = FileSystem::uninitialized();
 
-unsafe fn kmain() -> ! {
-    /*
-    let timer = Duration::from_nanos(1000000);
-    let mut a = Gpio::new(5).into_output(); 
-    let mut b = Gpio::new(6).into_output();
-    let mut c = Gpio::new(13).into_output();
-    let mut d = Gpio::new(19).into_output();
-    let mut e = Gpio::new(26).into_output();
-    loop {  
-        a.set();
-        c.set();
-        e.set();
-        b.clear();
-        d.clear();
-        timer::spin_sleep(timer);
-        a.clear();
-        c.clear();
-        e.clear();
-        b.set();
-        d.set();
-        timer::spin_sleep(timer);
+fn kmain() -> ! {
+    unsafe {
+        ALLOCATOR.initialize();
+        FILESYSTEM.initialize();
     }
-    */
-    shell("->");
+
+    kprintln!("Welcome to cs3210!");
+    shell::shell("> ");
 }
