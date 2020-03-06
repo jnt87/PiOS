@@ -29,8 +29,7 @@ pub mod shell;
 
 use console::kprintln;
 
-// FIXME: You need to add dependencies here to
-// test your drivers (Phase 2). Add them as needed.
+// You need to add dependencies here to
 extern crate pi;
 use crate::shell::shell;
 use pi::timer;
@@ -40,6 +39,9 @@ use pi::uart::MiniUart;
 use core::fmt::Write;
 use allocator::Allocator;
 use fs::FileSystem;
+use pi::atags::Atags;
+use fs::sd::Sd;
+use fat32::traits::BlockDevice;
 
 
 
@@ -52,7 +54,31 @@ fn kmain() -> ! {
         ALLOCATOR.initialize();
         FILESYSTEM.initialize();
     }
-
+    for tag in Atags::get() {
+        kprintln!("{:?}", tag);
+    }
+    /*
+    use fat32::traits::{FileSystem, Dir, Entry};
+    let t = FILESYSTEM.open("/").unwrap();
+    kprintln!("test");
+    match t.as_dir() {
+        Some(x) => {
+            match x.entries() {
+                Ok(val) => {
+                    for each in val {
+                        kprintln!("{}", each.name());
+                    }
+                },
+                Err(e) => kprintln!("T is doing: {:?}", e),
+            }
+        }, 
+        None => kprintln!("T sucks"),
+    }
+    for each in t.as_dir().unwrap().entries().unwrap() {
+        kprintln!("{:?}", each.name());
+    }*/
     kprintln!("Welcome to cs3210!");
     shell::shell("> ");
+
+
 }

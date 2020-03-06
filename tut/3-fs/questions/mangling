@@ -1,0 +1,1 @@
+generics require mangling, c does not have these. We call all the functions the same thing even though we take in different types. Mangling is there to give everything a unique symbol.We would have colliding name definitions if we didnt mangle

@@ -1,0 +1,5 @@
+We dont want them to be able to trasnmuate data into different structures or think that they are interchangeable. They may try to assume that they are similar and not know the finer details between each type in the union.
+
+We will be able to ensure that our particular subtree (AST) of handling a function will be secure and efficient, and take off pressure and understanding from the user. Abstraction is the key.  
+
+If the code is not compiled then Rust would be better, and it would allow you to inline and potentially optimize the code better.

@@ -1,0 +1,1 @@
+The rust compiler ensures that things are safe to use inside rust (given that we are not using unsafe and being dumb). If we use code from another language, we need to hope that the programmers were very very careful, which they usually are not

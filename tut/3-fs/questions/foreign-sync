@@ -1,0 +1,1 @@
+if we are using our code interface and make sure that we are locking somewhere we can gaurantee correctness, we can using locks to keep other people from intervening in the states of the device

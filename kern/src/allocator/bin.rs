@@ -14,16 +14,22 @@ use crate::allocator::LocalAlloc;
 ///   
 ///   map_to_bin(size) -> k
 ///   
-
 pub struct Allocator {
-    // FIXME: Add the necessary fields.
+    free_list: [LinkedList; 30],
+    heap_ptr: usize,
+    end: usize,
 }
 
 impl Allocator {
     /// Creates a new bin allocator that will allocate memory from the region
     /// starting at address `start` and ending at address `end`.
     pub fn new(start: usize, end: usize) -> Allocator {
-        unimplemented!("bin allocator")
+        let mut free_list = [LinkedList::new(); 30];
+        Allocator {
+            free_list: free_list,
+            heap_ptr: start,
+            end: end,
+        }
     }
 }
 
@@ -50,7 +56,29 @@ impl LocalAlloc for Allocator {
     /// or `layout` does not meet this allocator's
     /// size or alignment constraints.
     unsafe fn alloc(&mut self, layout: Layout) -> *mut u8 {
-        unimplemented!("bin allocator")
+        let mut size = layout.size();
+        if size < layout.align() {
+            size = layout.align();
+        }
+        if size * 2 != size.next_power_of_two() {
+            size = size.next_power_of_two();
+        }
+        let bin_num = (size.trailing_zeros().saturating_sub(3)) as usize;
+
+        if !self.free_list[bin_num].is_empty() {
+            return (self.free_list[bin_num].pop().unwrap() as *mut u8);
+        }
+        //make new space
+        let pointer_addr = align_up(self.heap_ptr, layout.align());
+        if self.end.saturating_sub(size) < pointer_addr {
+            return core::ptr::null_mut() as *mut u8;
+        } else {
+            let padding = pointer_addr - self.heap_ptr;
+            //let size = padding + layout.size();
+            self.heap_ptr = self.heap_ptr + size + padding;
+            return (pointer_addr as *mut u8);
+        }
+
     }
 
     /// Deallocates the memory referenced by `ptr`.
@@ -67,8 +95,26 @@ impl LocalAlloc for Allocator {
     /// Parameters not meeting these conditions may result in undefined
     /// behavior.
     unsafe fn dealloc(&mut self, ptr: *mut u8, layout: Layout) {
-        unimplemented!("bin allocator")
+        let mut size = layout.size();
+        if size < layout.align() {
+            size = layout.align();
+        }
+        if size * 2 != size.next_power_of_two() {
+            size = size.next_power_of_two();
+        }
+        let bin_num = size.trailing_zeros().saturating_sub(3) as usize;
+
+        unsafe {
+            self.free_list[bin_num].push(ptr as *mut usize);
+        }
     }
 }
 
 // FIXME: Implement `Debug` for `Allocator`.
+impl fmt::Debug for Allocator {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "{:?}", self.heap_ptr);
+        writeln!(f, "{:?}", self.end);
+        Ok(())
+    }
+}

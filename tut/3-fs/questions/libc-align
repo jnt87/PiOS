@@ -1,0 +1,3 @@
+Because of simd instructions requiring a certain alignment to work.
+
+You could devise schemes that do not include much metadata in the actual block being allocated and would still need to align to 16byte addressable space. 8 byte alignment would be appropriate for word addresses in a 64bit system. Of course if we compare to malloc, we assume that size is contained about the pointer value and you need two words per block minimum, one for the size value above and the pointer value (which could be a pointer to a pointer to a pointer to a pointer to a pointer...)

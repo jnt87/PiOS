@@ -1,0 +1,1 @@
+We end up dumping fragments into the bins that are not ideal to use because they are small and there might be a lot of them due to alignment as well. you would need another large data structure and method in order for your allocator to work.

@@ -9,9 +9,10 @@ use fat32::traits::FileSystem;
 use fat32::traits::{Dir, Entry};
 
 use crate::console::{kprint, kprintln, CONSOLE};
-use shim::io;
 use crate::ALLOCATOR;
 use crate::FILESYSTEM;
+use fat32::traits::Metadata;
+use alloc::string::String;
 
 /// Error type for `Command` parse failures.
 #[derive(Debug)]
@@ -55,6 +56,8 @@ impl<'a> Command<'a> {
 /// Starts a shell using `prefix` as the prefix for each line. This function
 /// never returns.
 pub fn shell(prefix: &str) -> ! {
+    
+    let mut working_dir = PathBuf::from("/");
     loop {
         let mut buf_mem = [0u8; 512];
         let mut buffer = StackVec::new(&mut buf_mem);
@@ -90,6 +93,14 @@ pub fn shell(prefix: &str) -> ! {
                                 }
                                 kprintln!("{}", command.args[num_args-1]);
                             }
+                        } else if command.path() == "pwd" {
+                           pwd(&working_dir); 
+                        } else if command.path() == "cd" {
+                            cd(&command.args[1..], &mut working_dir);
+                        } else if command.path() == "ls" {
+                            ls(&command.args[1..], &working_dir);
+                        } else if command.path() == "cat" {
+                            cat(&command.args[1..], &working_dir);
                         } else {
                             kprintln!("unknown command: {}", command.path());
                         }
@@ -118,5 +129,150 @@ pub fn shell(prefix: &str) -> ! {
                 }
             }
         }
+    }
+
+    fn cat(args: &[&str], working_dir: &PathBuf) {
+        if args.len() != 1 {
+            kprintln!("cat demands more");
+        }
+
+        let mut dir = working_dir.clone();
+
+        dir.push(args[0]);
+
+        let entry_return = FILESYSTEM.open(dir.as_path());
+        match entry_return {
+            Ok(x) => {
+                if let Some(ref mut file) = x.into_file() {
+                    loop {
+
+                        let mut buffer = [0u8; 512];
+                        use shim::io::Read;
+                        match file.read(&mut buffer) {
+                            Ok(0) => break,
+                            Ok(_) => {
+                                match String::from_utf8(buffer.to_vec()) {
+                                    Ok(k)=> kprint!("{}", k),
+                                    Err(e) => kprintln!("{:?}", e),
+                                }
+                            }
+                            Err(e) => kprint!("Failed to read file: {:?}", e)
+                        }
+                    }
+                    kprintln!("");
+                } else {
+                    kprintln!("Not a file");
+                }
+            },
+            Err(x) => { 
+                kprintln!("path not found");
+                return;
+            }
+        }
+    }
+
+    fn pwd(working_dir: &PathBuf) {
+        kprintln!("{}", working_dir.as_path().display()); // is this a thing
+    }
+
+    fn cd(args: &[&str], working_dir: &mut PathBuf) {
+        if args.len() == 0 {
+            return;
+        } else if args.len() != 1 {
+            kprintln!("too many arguments");
+            return;
+        }
+
+        if args[0] == "." {
+        } else if args[0] == ".." {
+            working_dir.pop();
+        } else {
+            let path = Path::new(args[0]);
+
+            let mut new_dir = working_dir.clone();
+            new_dir.push(path);
+            let entry = FILESYSTEM.open(new_dir.as_path());
+            match entry {
+                Err(_) => {
+                    kprintln!("cd: no such file or directory: {:?}", args[0]);
+                    return;
+                }, 
+                Ok(x) => {
+                    match x.as_dir() {
+                        Some(y) => working_dir.push(path),
+                        None => kprintln!("cd: no such file or directory: {:?}", args[0]),
+                    }
+                }
+            }
+        }
+    }
+
+    fn ls(args1: &[&str], working_dir: &PathBuf) {
+        let mut args = args1.clone();
+        let show_hidden = args.len() > 0 && args[0] == "-a"; //slick
+        if show_hidden {
+            args = &args[1..];
+        }
+
+        if args.len() > 1 {
+            kprint!("ls: cannot access multiple directories at once, install BSD instead");
+            return;
+        }
+        let mut dir = working_dir.clone();
+
+        if !args.is_empty() {
+            if args[0] == "." {
+            } else if args[0] == ".." {
+                dir.pop();
+            } else {
+                dir.push(args[0]);
+            }
+        }
+        let entry = FILESYSTEM.open(dir.as_path());
+        match entry {
+            Err(_) => {
+                kprintln!("ls: no such directory: {:?}", args[0]);
+                return;
+            }, 
+            Ok(x) => {
+                match x.into_dir() {
+                    Some(y) => {
+                        let mut entries = y.entries();
+                        for things in entries.unwrap() {
+                            if show_hidden || !things.metadata().hidden() {
+                                print_entry(&things);
+                            }
+                        }
+                    },
+                    None => kprintln!("ls: no such directory: {:?}", args[0]),
+                }
+            }
+        }
+    }
+
+    fn print_entry<F: Entry>(entry: &F) {
+        /*fn write_bool(b: bool, c: char) {
+            if b { kprint!("{}", c); } else { kprint!("-"); }
+        }
+
+        fn write_time<T: Time>(time: T) {
+            kprint!("{:02}:{:02}:{:02} ", time.hour(), time.minute(), time.second());
+        }
+        fn write_date<D: Date>(date: D) {
+            kprint!("{:02}/{:02}/{} ", data.month(), date.day(), date.year());
+        }*/
+
+        //write_bool(entry.is_dir(), 'd');
+        //write_bool(entry.is_file(), 'f');
+        //write_bool(entry.metadata().readonly(), 'r');
+        //write_bool(entry.metadata().hidden(), 'h');
+        //kprint!("\t");
+        //write_date(entry.metadata().date_created());
+        //write_time(entry.metadata().time_create());
+        //write_date(entry.metadata().date_modified());
+        //write_date(entry.metadata().date_accessed());
+        //write_time(entry.metadata().time_accessed());
+        //kprint!("\t");
+        kprintln!("{}", entry.name());
     }
 }

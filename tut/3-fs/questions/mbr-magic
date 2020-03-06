@@ -1,0 +1,1 @@
+the last two bytes of the MBR are 55,AA, just check those and you will be good, or search for them

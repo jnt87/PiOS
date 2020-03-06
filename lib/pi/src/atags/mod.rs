@@ -23,9 +23,40 @@ impl Atags {
 impl Iterator for Atags {
     type Item = Atag;
 
-    // FIXME: Implement `Iterator` for `Atags`
+    // Implement `Iterator` for `Atags`
     fn next(&mut self) -> Option<Atag> {
-        unimplemented!()
+        match self.ptr {
+            None => None,
+            Some(pointer) => {
+                match pointer.next() {
+                    Some(next_ptr) => {
+                        self.ptr = Some(next_ptr);
+                        Some(pointer.into())
+                    }
+                    None => {
+                        self.ptr = None;
+                        Some(Atag::None)
+                    }
+                }
+            }
+        }
+        /*
+        let pointer = self.ptr;
+        let _: () = pointer;
+        match pointer.next() {
+            Some(next_ptr) => {
+                self.ptr = Some(next_ptr);
+                Some(pointer.into())
+            }                
+            None => {
+                None
+            }
+        }*/
+        /*let cur = self.ptr;
+        self.ptr.unwrap().next().map(|next_tag| {
+            self.ptr = Some(next_tag);
+            cur.unwrap().into()
+        })*/
     }
 }
 

@@ -1,0 +1,1 @@
+directory entries reserve a double word to describe the file size, which limits how big it can be 2*32 = 4GB which is what we expect

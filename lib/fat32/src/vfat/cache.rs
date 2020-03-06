@@ -3,6 +3,7 @@ use alloc::vec::Vec;
 use core::fmt;
 use hashbrown::HashMap;
 use shim::io;
+use shim::io::Write;
 
 use crate::traits::BlockDevice;
 
@@ -87,7 +88,18 @@ impl CachedPartition {
     ///
     /// Returns an error if there is an error reading the sector from the disk.
     pub fn get_mut(&mut self, sector: u64) -> io::Result<&mut [u8]> {
-        unimplemented!("CachedPartition::get_mut()")
+        if !self.cache.contains_key(&sector) { 
+            let new_cache = self.virtual_to_physical(sector);
+            let mut contents = Vec::new();
+
+            for i in 0..self.factor() {
+                self.device.read_all_sector(new_cache.unwrap() + i, &mut contents)?;
+            }
+
+            self.cache.insert(sector, CacheEntry { data: contents, dirty: true });
+        }
+        Ok(self.cache.get_mut(&sector).unwrap().data.as_mut_slice())
+
     }
 
     /// Returns a reference to the cached sector `sector`. If the sector is not
@@ -97,7 +109,17 @@ impl CachedPartition {
     ///
     /// Returns an error if there is an error reading the sector from the disk.
     pub fn get(&mut self, sector: u64) -> io::Result<&[u8]> {
-        unimplemented!("CachedPartition::get()")
+        if !self.cache.contains_key(&sector) { 
+            let new_cache = self.virtual_to_physical(sector);
+            let mut contents = Vec::new();
+
+            for i in 0..self.factor() {
+                self.device.read_all_sector(new_cache.unwrap() + i, &mut contents)?;
+            }
+
+            self.cache.insert(sector, CacheEntry { data: contents, dirty: false });
+        }
+        Ok(self.cache.get_mut(&sector).unwrap().data.as_slice())
     }
 }
 
@@ -105,15 +127,15 @@ impl CachedPartition {
 // `write_sector` methods should only read/write from/to cached sectors.
 impl BlockDevice for CachedPartition {
     fn sector_size(&self) -> u64 {
-        unimplemented!()
+        self.partition.sector_size
     }
 
-    fn read_sector(&mut self, sector: u64, buf: &mut [u8]) -> io::Result<usize> {
-        unimplemented!()
+    fn read_sector(&mut self, sector: u64, mut buf: &mut [u8]) -> io::Result<usize> {
+        buf.write(self.get(sector).unwrap())
     }
 
     fn write_sector(&mut self, sector: u64, buf: &[u8]) -> io::Result<usize> {
-        unimplemented!()
+        self.get_mut(sector).unwrap().write(buf)
     }
 }
 

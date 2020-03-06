@@ -1,0 +1,1 @@
+you need to linearly search the root directory to find a/, which takes a read in the fat and a read in the cluster associated with the fat. Then you have to repeat that looking for b inside of a. Finally you must repeat this inside B looking for c.txt

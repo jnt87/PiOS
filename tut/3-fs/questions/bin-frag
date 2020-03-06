@@ -1,0 +1,5 @@
+I could free up the memory that i jump over in the search for perfect alignment so that they are in bins instead of ignored forever :(
+
+you could implement a slab allocator and give all the space to one block, splitting as you need to and merging on the way back up
+
+old space - new space - this would reuire you to stop the world in downtime, and compact the data

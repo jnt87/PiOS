@@ -3,6 +3,7 @@ use shim::io;
 use shim::ioerr;
 
 use fat32::traits::BlockDevice;
+use pi::timer::spin_sleep;
 
 extern "C" {
     /// A global representing the last SD controller error that occured.
@@ -30,6 +31,11 @@ extern "C" {
 
 // FIXME: Define a `#[no_mangle]` `wait_micros` function for use by `libsd`.
 // The `wait_micros` C signature is: `void wait_micros(unsigned int);`
+#[no_mangle]
+pub fn wait_micros(us: u32) {
+    let t = Duration::from_micros(us as u64);
+    spin_sleep(t);
+}
 
 /// A handle to an SD card controller.
 #[derive(Debug)]
@@ -42,7 +48,12 @@ impl Sd {
     /// with atomic memory access, but we can't use it yet since we haven't
     /// written the memory management unit (MMU).
     pub unsafe fn new() -> Result<Sd, io::Error> {
-        unimplemented!("Sd::new()")
+        let sd = unsafe { sd_init() };
+        if sd == 0 {
+            Ok(Sd {})
+        } else {
+            Err(io::Error::new(io::ErrorKind::Other, "Driver failed to init"))
+        }
     }
 }
 
@@ -60,7 +71,29 @@ impl BlockDevice for Sd {
     ///
     /// An error of kind `Other` is returned for all other errors.
     fn read_sector(&mut self, n: u64, buf: &mut [u8]) -> io::Result<usize> {
-        unimplemented!("Sd::read_sector()")
+        if buf.len() < 512 {
+            Err(io::Error::new(io::ErrorKind::InvalidInput, "buf < 512"))
+        } else if n > (2u64.pow(31) - 1) as u64 {
+            use crate::console::kprintln;
+            kprintln!("n: {:?}", n);
+            Err(io::Error::new(io::ErrorKind::InvalidInput, "buf > 2^31 - 1"))
+        } else { 
+            //lets get bytes read from sd_readsector
+            let bytes_read = unsafe { sd_readsector(n as i32, buf.as_mut_ptr())};
+
+            if bytes_read == 0 {
+                match unsafe { sd_err } {
+                    -1 => {
+                        return Err(io::Error::new(io::ErrorKind::TimedOut, "Timeout"));
+                    },
+                    _ => {
+                        return Err(io::Error::new(io::ErrorKind::Other, "driver problem"));
+                    },
+                }
+            } else { 
+                Ok(bytes_read as usize)
+            }
+        }
     }
 
     fn write_sector(&mut self, _n: u64, _buf: &[u8]) -> io::Result<usize> {

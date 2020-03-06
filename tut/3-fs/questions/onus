@@ -1,0 +1,1 @@
+this gives the advantage of saving space, which is important on embedded systems, it also allows for the caller to alloc faster if it doesnt have an entire list to traverse or stop world doesnt occur to sort the list. Compiler is mostly in charge of alloc and dealloc anyway.
