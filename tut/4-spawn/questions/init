@@ -1,0 +1,82 @@
+_start: 
+The [1:0] bits of the MPIDR_EL1 register are read Aff0, yielding the core number thats currently executing code. If the number is zero, go to setup, otherwise call WFE in an infinite loop
+
+halt: 
+calls wfe in a infinite loop - wait for event lets it go to a low-power mode and wait until a wakeup occurs
+
+setup: 
+stores the address at _start into the stack pointer
+
+reads the current exception level in 0
+masks bits [3:2] - all other bits reserved
+shifts the bits right logically 2
+
+switch_to_el2:
+if the bits indicate EL3
+switch to EL2
+if not jump down to switch to EL1
+
+(switch to el2)
+setup the secure configuration register
+bits 0, 4, 5, 7, 8, 10
+10: RW - if el2 is present, its aarch64 and controls el1 and el0 behaviors
+8: HCE bit = hypervisor calls at EL1 and above
+7: SMD secure monitor call disabled at EL1 and above
+5: RES1 
+4: RES1
+0: NS - non-secure bit memory accesses from el1 and el0 cannot access Secure memory
+
+stores the bits into the SCR_EL3 register
+
+sets up SPSR_EL3
+bits 0, 3, 6, 7, 8, 9
+9: D bit watchpoint, breakpoint, and software step exceptions targeted at the currention exception level are masked
+8: A bit determines if SErrors are masked
+7: I bit irq are masked
+6: F bit FIQ are masked
+[3:0] : because its 0x9 it shows it sets the state of the exception at EL2h 
+
+sets x2 to the address of switch_to_el1
+stores the address in ELR_EL3 - exception link
+
+eret lowers the level
+
+switch_to_el1:
+compares x0 - the exception level to see if its in EL1 if not skip to set_stack
+
+sets the stack pointer to _start
+
+reads CNTHCTL_EL2 into x0 - counter-timer hypervisor control
+sets the [1:0] bits high - EL1PCTEN and ELPCEN - not instructions can be trapped
+stores 0 to CNTVOFF_EL2 - counter timer virtual offset register
+
+sets RW and VM for the hypervisor configuration register (EL2)
+RW: EL1 is aarch64, el0 will take the pstate.nRW
+VM: non secure EL1&0 state 2 address translation enabled
+
+sets the CPTR_EL2 to zero - meaning dont trap instructions accessing SVE registers
+
+reads the  access control register CPACR_EL1
+turns on bits [21:20]
+enabling FPEN bits - this control does not cause instructions to be trapped
+
+set SCTLR to known state
+7: ITD - IT disable
+4: SAO - SP alignment check enable for EL0 - alignment to 16 BYTE bounds
+
+set bits 0, 2, 6, 7, 8, 9 in SPSR_EL2
+9: D bit watchpoint breakpoint and software step exceptions targeted at the current exception level are masked
+8: SError masked
+7: IRQ masked
+6: FIQ masked
+[3:0]: sets up the exception as being called form EL1h
+
+set_stack:
+sets the stack pointer to _start
+
+go_kmain: 
+BL - branch and store return address - hint to predictor this is a function call
+if it returns Branch to halt - loops with WFE in low-power
+
+Context_restore:
+ret - returns to x30, hints to branch prediction logic that its a function return

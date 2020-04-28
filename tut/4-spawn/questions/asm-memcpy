@@ -1,0 +1,20 @@
+//preamble to pipelining
+cbz x2, end 
+ldr x3, [x0], #8 //a[i]
+sub x2, x2, #8 //n-1
+cbz x2, conclusion 
+
+//body
+loop:
+str x3, [x1], #8 //b[i]
+ldr x3, [x0], #8 //a[i+1]
+sub x2, x2, #8 //n-2
+cbnz x2, loop
+
+//conclusion
+conclusion:
+str x3, [x1], #8 //b[n]
+end:
+ret
+
+

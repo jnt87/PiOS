@@ -2,7 +2,7 @@ ROOT := $(shell git rev-parse --show-toplevel)
 
 KERN := boot
 TARGET := target/aarch64-unknown-none/release/${KERN}
-OBJCPY := cargo objcopy -- --strip-all -O binary
+OBJCPY := $(HOME)/.cargo/bin/rust-objcopy --strip-all -O binary
 
 .PHONY: all build qemu objdump nm check clean install test
 

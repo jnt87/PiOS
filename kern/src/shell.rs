@@ -55,17 +55,17 @@ impl<'a> Command<'a> {
 
 /// Starts a shell using `prefix` as the prefix for each line. This function
 /// never returns.
-pub fn shell(prefix: &str) -> ! {
+pub fn shell(prefix: &str) {
     
     let mut working_dir = PathBuf::from("/");
     loop {
         let mut buf_mem = [0u8; 512];
         let mut buffer = StackVec::new(&mut buf_mem);
-        loop {
+        //loop {
             let mut x = CONSOLE.lock();
             kprint!("\r{}", prefix);
-            if x.inner().has_byte() { break; }
-        }
+        //    if x.inner().has_byte() { break; }
+        //}
         loop {
             let mut x = CONSOLE.lock();
             let byte = x.read_byte();
@@ -101,6 +101,8 @@ pub fn shell(prefix: &str) -> ! {
                             ls(&command.args[1..], &working_dir);
                         } else if command.path() == "cat" {
                             cat(&command.args[1..], &working_dir);
+                        } else if command.path() == "exit" {
+                            return
                         } else {
                             kprintln!("unknown command: {}", command.path());
                         }

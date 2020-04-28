@@ -1,0 +1,3 @@
+mrs xn, currentEL
+
+where xn is an available register n

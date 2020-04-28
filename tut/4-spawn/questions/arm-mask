@@ -1,0 +1,6 @@
+we can use DAIFSet and DAIFClr to change the bit in location 1 (for IRQ)
+
+msr DAIFSet, #0
+msr DAIFClr, #1
+
+should clear the bit

@@ -1,0 +1,11 @@
+on exception return the values are stores in ELR_ELx
+
+ldr xn, B
+MSR SP_ELx, xn
+
+where n is the available register n and x is the level that will handle the exception
+
+if SPSel is 0
+
+ldr xn, B
+MSR SP_EL0, xn

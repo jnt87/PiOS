@@ -34,7 +34,7 @@ unsafe fn jump_to(addr: *mut u8) -> ! {
 
 fn kmain() -> ! {
     let mut uart = MiniUart::new();
-    uart.set_read_timeout(Duration::from_millis(750));
+    uart.set_read_timeout(Duration::from_millis(250));
     loop {
         let mut bin_space = unsafe { core::slice::from_raw_parts_mut(BINARY_START, MAX_BINARY_SIZE) };
         let x = Xmodem::receive(&mut uart, &mut bin_space);

@@ -47,7 +47,8 @@ use fs::FileSystem;
 use pi::atags::Atags;
 use fs::sd::Sd;
 use fat32::traits::BlockDevice;
-
+use aarch64;
+use aarch64::brk;
 
 use process::GlobalScheduler;
 use traps::irq::Irq;
@@ -68,28 +69,10 @@ fn kmain() -> ! {
     for tag in Atags::get() {
         kprintln!("{:?}", tag);
     }
-    /*
-    use fat32::traits::{FileSystem, Dir, Entry};
-    let t = FILESYSTEM.open("/").unwrap();
-    kprintln!("test");
-    match t.as_dir() {
-        Some(x) => {
-            match x.entries() {
-                Ok(val) => {
-                    for each in val {
-                        kprintln!("{}", each.name());
-                    }
-                },
-                Err(e) => kprintln!("T is doing: {:?}", e),
-            }
-        }, 
-        None => kprintln!("T sucks"),
-    }
-    for each in t.as_dir().unwrap().entries().unwrap() {
-        kprintln!("{:?}", each.name());
-    }*/
+    unsafe { kprintln!("Current EL: {:?}", aarch64::current_el()) };
+    unsafe{ asm!("brk 2" :::: "volatile"); }
     kprintln!("Welcome to cs3210!");
-    shell::shell("> ");
-
-
+    loop {
+        shell::shell("> ");
+    }
 }

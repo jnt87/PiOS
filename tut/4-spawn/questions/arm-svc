@@ -1,0 +1,3 @@
+the vector used for system calls from a lower EL is VBAR_ELx offset 0x400
+
+the address it jumps to exactly is VBAR_EL1 + 0x400

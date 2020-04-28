@@ -64,9 +64,9 @@ unsafe fn switch_to_el1() {
     extern "C" {
         static mut vectors: u64;
     }
-
     if current_el() == 2 {
         // set the stack-pointer for EL1
+        // -
         SP_EL1.set(SP.get() as u64);
 
         // enable CNTP for EL1/EL0 (ref: D7.5.2, D7.5.13)
@@ -86,6 +86,8 @@ unsafe fn switch_to_el1() {
 
         // set up exception handlers
         // FIXME: load `vectors` addr into appropriate register (guide: 10.4)
+        VBAR_EL1.set(((&mut vectors) as *mut u64) as u64);
+        
 
         // change execution level to EL1 (ref: C5.2.19)
         SPSR_EL2.set(
@@ -96,7 +98,10 @@ unsafe fn switch_to_el1() {
             | SPSR_EL2::A,
         );
 
-        // FIXME: eret to itself, expecting current_el() == 1 this time
+
+        // eret to itself, expecting current_el() == 1 this time
+        ELR_EL2.set(switch_to_el1 as u64);
+        asm::eret();
     }
 }
 

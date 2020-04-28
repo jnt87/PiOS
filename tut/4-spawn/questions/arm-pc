@@ -1,0 +1,10 @@
+you could do:
+ldr xn, A
+ret xn
+where n could be any available nonzero register
+
+
+assuming no hypervisor mode
+ldr xn, A
+msr ELR_ELx, xn
+eret

@@ -55,7 +55,7 @@ pub unsafe fn cli() {
          : "volatile");
 }
 
-/// Break with an immeidate
+/// Break with an immediate
 #[macro_export]
 macro_rules! brk {
     ($num:tt) => {

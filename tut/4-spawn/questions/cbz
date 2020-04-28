@@ -1,0 +1,9 @@
+1. compares a value to zero, and if its true then branches to the target label
+
+2. i would use it to count down an index in a loop and reduce the number of comparisons needed to be made inside of the loop itself (or at the top - but still inside)
+
+i imagine that the hardware is precharged and if 1 bit is high then it pulls the entire signal to ground, then you dont branch
+
+This could be achieved in basically radix-8 using NAND8-INV-NAND8
+
+works for 32 and 64 bit
