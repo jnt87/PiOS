@@ -70,9 +70,9 @@ fn kmain() -> ! {
         kprintln!("{:?}", tag);
     }
     unsafe { kprintln!("Current EL: {:?}", aarch64::current_el()) };
-    unsafe{ asm!("brk 2" :::: "volatile"); }
-    kprintln!("Welcome to cs3210!");
     loop {
+        kprintln!("Welcome to cs3210!");
         shell::shell("> ");
+        unsafe{ asm!("brk 2" :::: "volatile"); }
     }
 }

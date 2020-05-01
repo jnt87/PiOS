@@ -38,8 +38,8 @@ context_save:
 
     stp x1, x2, [SP, #-16]!
     
-    mrs x1, SPSR_EL1
-    mrs x2, ELR_EL1
+    mrs x1, ELR_EL1
+    mrs x2, SPSR_EL1
     stp x1, x2, [SP, #-16]!
     
     mov x0, x29
@@ -120,21 +120,21 @@ context_restore:
 .global vectors
 vectors:
     // FIXME: Setup the 16 exception vectors
-    HANDLER 0, 0 
-    HANDLER 0, 1 
-    HANDLER 0, 2 
-    HANDLER 0, 3 
-    HANDLER 1, 0 
-    HANDLER 1, 1 
-    HANDLER 1, 2 
-    HANDLER 1, 3 
-    HANDLER 2, 0 
-    HANDLER 2, 1 
-    HANDLER 2, 2 
-    HANDLER 2, 3 
-    HANDLER 3, 0 
-    HANDLER 3, 1 
-    HANDLER 3, 2 
-    HANDLER 3, 3 
+    HANDLER 0,0 
+    HANDLER 0,1 
+    HANDLER 0,2 
+    HANDLER 0,3
+    HANDLER 1,0 
+    HANDLER 1,1 
+    HANDLER 1,2 
+    HANDLER 1,3 
+    HANDLER 2,0 
+    HANDLER 2,1 
+    HANDLER 2,2 
+    HANDLER 2,3 
+    HANDLER 3,0 
+    HANDLER 3,1 
+    HANDLER 3,2 
+    HANDLER 3,3 
     
 
