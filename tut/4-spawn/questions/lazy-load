@@ -1,0 +1,4 @@
+We can have the SIMD instructions disabled by default using CPACR_EL1.FPEN and setting it to b00 
+Then it will trigger a synchronous exception that we catch and enable FPEN for. We can continue the function using floating point instructions and store them as normal. 
+
+We put the value of CPACR_EL1 onto the stack at the bottom of the trap frame. We can then do a branch if equal to zero to skip the load and store of the SIMD registers - without removing them from the trap frame - they just will not matter as nothing will be stored to or loaded from that area.
