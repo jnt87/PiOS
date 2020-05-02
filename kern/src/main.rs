@@ -73,6 +73,6 @@ fn kmain() -> ! {
     loop {
         kprintln!("Welcome to cs3210!");
         shell::shell("> ");
-        unsafe{ asm!("brk 2" :::: "volatile"); }
+        unsafe{ asm!("svc 3" :::: "volatile"); }
     }
 }

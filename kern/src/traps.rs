@@ -48,18 +48,22 @@ pub extern "C" fn handle_exception(info: Info, esr: u32, tf: &mut TrapFrame) {
         Kind::Synchronous => {
             match Syndrome::from(esr) {
                 Syndrome::Brk(num) => {
-                    kprintln!("{:?}", tf.elr);
                     tf.elr = tf.elr+4;
-                    kprintln!("{:?}", tf.elr);
                     shell::shell("debug>");
                     return
                 },
+                Syndrome::Svc(num) => {
+                    //handle_syscall(num, tf);
+                    kprintln!("svc handled");
+                    return
+                },
                 _ => {
-                    kprintln!("other");
+                    kprintln!("other sync");
+                    tf.elr = tf.elr+4;
                     return
                 },
             };
-        }, 
+        },
         _ => {
             kprintln!("other");
             return
