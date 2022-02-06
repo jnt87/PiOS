@@ -9,6 +9,7 @@ use crate::param::{PAGE_MASK, PAGE_SIZE, TICK, USER_IMG_BASE};
 use crate::process::{Id, Process, State};
 use crate::traps::TrapFrame;
 use crate::VMM;
+use run_shell;
 
 /// Process scheduler for the entire machine.
 #[derive(Debug)]
@@ -34,6 +35,7 @@ impl GlobalScheduler {
     /// Adds a process to the scheduler's queue and returns that process's ID.
     /// For more details, see the documentation on `Scheduler::add()`.
     pub fn add(&self, process: Process) -> Option<Id> {
+
         self.critical(move |scheduler| scheduler.add(process))
     }
 
@@ -66,7 +68,30 @@ impl GlobalScheduler {
     /// Starts executing processes in user space using timer interrupt based
     /// preemptive scheduling. This method should not return under normal conditions.
     pub fn start(&self) -> ! {
-        unimplemented!("GlobalScheduler::start()")
+        *self.0.lock() = Some(Scheduler::new());
+        let mut p = Process::new().unwrap();
+        p.trap_frame.elr = run_shell as u64;
+        p.trap_frame.sp = p.stack.top().as_u64();
+        p.trap_frame.spsr = 0x0;
+        let tf = p.trap_frame.clone();
+
+        unsafe {
+            asm!(
+                "mov SP, $0
+
+                bl context_restore
+
+                adr x0, _start
+                mov SP, x0
+                mov x0, xzr
+                mov lr, xzr
+
+                eret"
+                :: "r"(tf)
+                :: "volatile");
+        }
+        loop {
+        }
     }
 
     /// Initializes the scheduler and add userspace processes to the Scheduler
@@ -101,7 +126,9 @@ pub struct Scheduler {
 impl Scheduler {
     /// Returns a new `Scheduler` with an empty queue.
     fn new() -> Scheduler {
-        unimplemented!("Scheduler::new()")
+        Scheduler {
+            processes: VecDeque::new(),
+            last_id: None,
     }
 
     /// Adds a process to the scheduler's queue and returns that process's ID if
@@ -163,4 +190,3 @@ pub extern "C" fn  test_user_process() -> ! {
         }
     }
 }
-
